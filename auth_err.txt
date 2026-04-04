@@ -1,0 +1,56 @@
+
+[1m[46m RUN [49m[22m [36mv4.1.2 [39m[90mD:/Projeto_Agendamento/BackEnd_Agendamento[39m
+
+(node:12724) [MONGOOSE] Warning: mongoose: Duplicate schema index on {"email":1} for model "User". This is often due to declaring an index using both "index: true" and "schema.index()". Please remove the duplicate index definition.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [31mÔØ»[39m src/tests/auth.test.ts [2m([22m[2m3 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 2288[2mms[22m[39m
+[31m     [31m├ù[31m should register a new company when requested by admin[39m[33m 322[2mms[22m[39m
+     [32mÔ£ô[39m should fail to register if not admin[32m 124[2mms[22m[39m
+[31m     [31m├ù[31m should login an existing user[39m[32m 145[2mms[22m[39m
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 2 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL  src/tests/auth.test.ts > Auth Endpoints > should register a new company when requested by admin
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ÔØ» src/tests/auth.test.ts:42:24
+     40|       })
+     41|
+     42|     expect(res.status).toBe(201)
+       |                        ^
+     43|     expect(res.body.status).toBe('success')
+     44|     expect(res.body.data).toHaveProperty('_id')
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/2]ÔÄ»
+
+ FAIL  src/tests/auth.test.ts > Auth Endpoints > should login an existing user
+AssertionError: expected 401 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 401
+
+ ÔØ» src/tests/auth.test.ts:87:24
+     85|     })
+     86|
+     87|     expect(res.status).toBe(200)
+       |                        ^
+     88|     expect(res.body.data).toHaveProperty('tokens')
+     89|     expect(res.body.data.tokens).toHaveProperty('accessToken')
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/2]ÔÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 19:19:11
+[2m   Duration [22m 3.99s[2m (transform 524ms, setup 516ms, import 908ms, tests 2.29s, environment 0ms)[22m
+
