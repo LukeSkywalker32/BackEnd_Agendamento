@@ -26,11 +26,13 @@ interface TokenPair {
   refreshToken: string
 }
 
+//Gera o token de acesso
 function generateAccessToken(payload: JwtPayload): string {
   return jwt.sign(payload, env.JWT_SECRET, {
     expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
   })
 }
+
 
 async function generateRefreshToken(userId: string): Promise<string> {
   const token = jwt.sign({ userId }, env.JWT_REFRESH_SECRET, {
