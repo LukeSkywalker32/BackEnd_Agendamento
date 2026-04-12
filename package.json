@@ -1,7 +1,7 @@
 {
-  "name": "cs_agendamento_api",
+  "name": "sata_api",
   "version": "1.0.0",
-  "description": "API de agendamento e checkin",
+  "description": "SATA - Sistema de Agendamentos de Transporte de Cargas",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
