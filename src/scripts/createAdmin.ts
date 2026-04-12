@@ -8,12 +8,10 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 dns.setDefaultResultOrder("ipv4first");
 
 async function main() {
-   console.log("🔄 Conectando ao MongoDB...");
    await mongoose.connect(env.MONGODB_URI);
 
    const existingAdmin = await User.findOne({ email: "admin@sata.com.br" });
    if (existingAdmin) {
-      console.log("⚠️ Usuário admin já existe no banco de dados.");
       await mongoose.disconnect();
       return;
    }
@@ -30,8 +28,7 @@ async function main() {
       isActive: true,
    });
 
-   console.log("Usuário admin criado com sucesso!");
    await mongoose.disconnect();
 }
 
-main().catch(console.error);
+main();
