@@ -1,29 +1,29 @@
-import type { NextFunction, Response } from 'express'
-import jwt from 'jsonwebtoken'
-import { env } from '../config/env'
-import type { AuthRequest, JwtPayload } from '../types'
-import { ApiError } from '../utils/apiError'
+import type { NextFunction, Response } from "express";
+import jwt from "jsonwebtoken";
+import { env } from "../config/env";
+import type { AuthRequest, JwtPayload } from "../types";
+import { ApiError } from "../utils/apiError";
 
 export function authMiddleware(req: AuthRequest, _res: Response, next: NextFunction): void {
-  const authHeader = req.headers.authorization
+   const authHeader = req.headers.authorization;
 
-  if (!authHeader) {
-    throw ApiError.unauthorized('Token não fornecido')
-  }
+   if (!authHeader) {
+      throw ApiError.unauthorized("Token não fornecido");
+   }
 
-  const parts = authHeader.split(' ')
+   const parts = authHeader.split(" ");
 
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    throw ApiError.unauthorized('Token mal formatado')
-  }
+   if (parts.length !== 2 || parts[0] !== "Bearer") {
+      throw ApiError.unauthorized("Token mal formatado");
+   }
 
-  const token = parts[1]
+   const token = parts[1];
 
-  try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload
-    req.user = decoded
-    next()
-  } catch {
-    throw ApiError.unauthorized('Token inválido ou expirado')
-  }
+   try {
+      const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+      req.user = decoded;
+      next();
+   } catch {
+      throw ApiError.unauthorized("Token inválido ou expirado");
+   }
 }
