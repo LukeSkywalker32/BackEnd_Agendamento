@@ -78,12 +78,12 @@ export async function listAllSchedulings(req: Request, res: Response, next: Next
 export async function getDashboard(_req: Request, res: Response, next: NextFunction) {
    try {
       const [
-         totalUsers,
-         totalCompanies,
-         totalCarriers,
-         totalSchedulings,
-         pendingSchedulings,
-         confirmedSchedulings,
+         totalUsuarios,
+         totalEmpresas,
+         totalTransportadoras,
+         totalAgendamentos,
+         agendamentosPendentes,
+         agendamentosConfirmados,
          totalCheckins,
       ] = await Promise.all([
          User.countDocuments({ isActive: true }),
@@ -98,12 +98,12 @@ export async function getDashboard(_req: Request, res: Response, next: NextFunct
       res.json({
          status: "success",
          data: {
-            totalUsers,
-            totalCompanies,
-            totalCarriers,
-            totalSchedulings,
-            pendingSchedulings,
-            confirmedSchedulings,
+            totalUsuarios,
+            totalEmpresas,
+            totalTransportadoras,
+            totalAgendamentos,
+            agendamentosPendentes,
+            agendamentosConfirmados,
             totalCheckins,
          },
       });
