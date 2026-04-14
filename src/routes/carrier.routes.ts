@@ -2,8 +2,8 @@ import { Router } from "express";
 import * as carrierController from "../controllers/carrier.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { roleMiddleware } from "../middlewares/role.middleware";
-import { validate } from "../middlewares/validate.middleware";
 import { uploadDocuments } from "../middlewares/upload.middleware";
+import { validate } from "../middlewares/validate.middleware";
 import { createSchedulingSchema, updateSchedulingSchema } from "../schemas/scheduling.schema";
 
 const router = Router();
@@ -13,6 +13,10 @@ router.use(authMiddleware, roleMiddleware("carrier"));
 // Empresas de insumos
 router.get("/companies", carrierController.listCompanies);
 router.get("/companies/:id/time-windows", carrierController.getCompanyTimeWindows);
+
+// Gerenciamento de usuários
+router.patch("/users/:id/deactivate", carrierController.deactivateUser);
+router.patch("/users/:id/activate", carrierController.activateUser);
 
 // Agendamentos
 router.post(

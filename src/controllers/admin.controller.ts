@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
-import { User } from "../models/User";
-import { Scheduling } from "../models/Scheduling";
 import { CheckIn } from "../models/CheckIn";
+import { Scheduling } from "../models/Scheduling";
+import { User } from "../models/User";
 import * as schedulingService from "../services/scheduling.service";
 import { ApiError } from "../utils/apiError";
 
@@ -60,6 +60,36 @@ export async function deactivateUser(req: Request, res: Response, next: NextFunc
          throw ApiError.notFound("Usuário não encontrado");
       }
       res.json({ status: "success", data: user, message: "Usuário desativado" });
+   } catch (error) {
+      next(error);
+   }
+}
+
+export async function activateUser(req: Request, res: Response, next: NextFunction) {
+   try {
+      const user = await User.findByIdAndUpdate(
+         req.params.id,
+         { isActive: true },
+         { new: true },
+      ).select("-password");
+
+      if (!user) {
+         throw ApiError.notFound("Usuário não encontrado");
+      }
+      res.json({ status: "success", data: user, message: "Usuário ativado" });
+   } catch (error) {
+      next(error);
+   }
+}
+
+export async function deleteUser(req: Request, res: Response, next: NextFunction) {
+   try {
+      const user = await User.findByIdAndDelete(req.params.id);
+
+      if (!user) {
+         throw ApiError.notFound("Usuário não encontrado");
+      }
+      res.json({ status: "success", message: "Usuário deletado com sucesso" });
    } catch (error) {
       next(error);
    }
