@@ -9,8 +9,8 @@ interface CreateBlockedDateData {
 }
 
 export async function createBlockedDate(data: CreateBlockedDateData) {
-   const blockedDate = new Date(data.date);
-   blockedDate.setHours(0, 0, 0, 0);
+   const blockedDate = new Date(data.date + "T00:00:00.000Z");
+   //blockedDate.setHours(0, 0, 0, 0);
 
    const existing = await BlockedDate.findOne({
       companyId: data.companyId,

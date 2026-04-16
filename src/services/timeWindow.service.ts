@@ -1,5 +1,5 @@
-import { TimeWindow } from "../models/TimeWindow";
 import { BlockedDate } from "../models/BlockedDate";
+import { TimeWindow } from "../models/TimeWindow";
 import { ApiError } from "../utils/apiError";
 
 interface CreateTimeWindowData {
@@ -18,8 +18,8 @@ interface UpdateTimeWindowData {
 }
 
 export async function createTimeWindow(data: CreateTimeWindowData) {
-   const windowDate = new Date(data.date);
-   windowDate.setHours(0, 0, 0, 0);
+   const windowDate = new Date(data.date + "T00:00:00.000Z");
+   //windowDate.setHours(0, 0, 0, 0);
 
    const blocked = await BlockedDate.findOne({
       companyId: data.companyId,
@@ -59,13 +59,15 @@ export async function getTimeWindowsByCompany(companyId: string, dateFilter?: st
    const query: Record<string, unknown> = { companyId, isActive: true };
 
    if (dateFilter) {
-      const date = new Date(dateFilter);
-      date.setHours(0, 0, 0, 0);
+      const date = new Date(dateFilter + "T00:00:00.000Z");
+      //date.setHours(0, 0, 0, 0);
       const nextDay = new Date(date);
       nextDay.setDate(nextDay.getDate() + 1);
       query.date = { $gte: date, $lt: nextDay };
    } else {
-      query.date = { $gte: new Date(new Date().setHours(0, 0, 0, 0)) };
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      query.date = { $gte: today };
    }
 
    return TimeWindow.find(query).sort({ date: 1, startTime: 1 });
@@ -73,7 +75,6 @@ export async function getTimeWindowsByCompany(companyId: string, dateFilter?: st
 
 export async function getAvailableTimeWindows(companyId: string, dateFilter?: string) {
    const windows = await getTimeWindowsByCompany(companyId, dateFilter);
-
    return windows.filter(w => w.currentCount < w.maxVehicles);
 }
 
