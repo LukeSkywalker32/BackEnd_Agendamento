@@ -14,10 +14,6 @@ router.use(authMiddleware, roleMiddleware("carrier"));
 router.get("/companies", carrierController.listCompanies);
 router.get("/companies/:id/time-windows", carrierController.getCompanyTimeWindows);
 
-// Gerenciamento de usuários
-router.patch("/users/:id/deactivate", carrierController.deactivateUser);
-router.patch("/users/:id/activate", carrierController.activateUser);
-
 // Agendamentos
 router.post(
    "/schedulings",

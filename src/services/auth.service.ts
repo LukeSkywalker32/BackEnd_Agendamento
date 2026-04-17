@@ -41,11 +41,18 @@ async function generateRefreshToken(userId: string): Promise<string> {
    const expiresAt = new Date();
    expiresAt.setDate(expiresAt.getDate() + 7);
 
-   await RefreshToken.create({
-      userId,
-      token,
-      expiresAt,
-   });
+   try {
+      await RefreshToken.create({
+         userId,
+         token,
+         expiresAt,
+      });
+   } catch (error: any) {
+      if (error.code === 11000) {
+         throw ApiError.internal("Falha temporária ao gerar token. Tente novamente.");
+      }
+      throw error;
+   }
 
    return token;
 }
@@ -131,7 +138,7 @@ export async function refreshAccessToken(token: string): Promise<TokenPair> {
 
    const user = await User.findById(storedToken.userId);
 
-   if (!user || !user.isActive) {
+   if (!user?.isActive) {
       throw ApiError.unauthorized("Usuário não encontrado ou inativo");
    }
 

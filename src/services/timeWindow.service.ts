@@ -18,8 +18,7 @@ interface UpdateTimeWindowData {
 }
 
 export async function createTimeWindow(data: CreateTimeWindowData) {
-   const windowDate = new Date(data.date + "T00:00:00.000Z");
-   //windowDate.setHours(0, 0, 0, 0);
+   const windowDate = new Date(`${data.date}T00:00:00.000Z`);
 
    const blocked = await BlockedDate.findOne({
       companyId: data.companyId,
@@ -59,8 +58,7 @@ export async function getTimeWindowsByCompany(companyId: string, dateFilter?: st
    const query: Record<string, unknown> = { companyId, isActive: true };
 
    if (dateFilter) {
-      const date = new Date(dateFilter + "T00:00:00.000Z");
-      //date.setHours(0, 0, 0, 0);
+      const date = new Date(`${dateFilter}T00:00:00.000Z`);
       const nextDay = new Date(date);
       nextDay.setDate(nextDay.getDate() + 1);
       query.date = { $gte: date, $lt: nextDay };

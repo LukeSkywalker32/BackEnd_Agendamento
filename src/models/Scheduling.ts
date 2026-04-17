@@ -86,8 +86,8 @@ const schedulingSchema = new Schema<IScheduling>(
       },
       documentStatus: {
          type: String,
-         enum: ["pending", "approved", "rejected"],
-         default: "pending",
+         enum: ["not_attached", "pending", "approved", "rejected"],
+         default: "not_attached",
       },
       documents: {
          type: [schedulingDocumentSchema],

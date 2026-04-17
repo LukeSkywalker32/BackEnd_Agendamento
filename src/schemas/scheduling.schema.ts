@@ -9,8 +9,10 @@ export const createSchedulingSchema = z.object({
       driverPhone: z.string().optional(),
       vehiclePlate: z
          .string()
-         .min(7, "Placa inválida")
-         .max(8, "Placa inválida")
+         .regex(
+            /^[A-Z]{3}\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/i,
+            "Placa inválida (formato ABC1234 ou ABC1D23)",
+         )
          .transform(val => val.toUpperCase()),
       vehicleType: z.string().min(1, "Tipo do veículo é obrigatório"),
       cargoDescription: z.string().optional(),
@@ -24,8 +26,10 @@ export const updateSchedulingSchema = z.object({
       driverPhone: z.string().optional(),
       vehiclePlate: z
          .string()
-         .min(7)
-         .max(8)
+         .regex(
+            /^[A-Z]{3}\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/i,
+            "Placa inválida (formato ABC1234 ou ABC1D23)",
+         )
          .transform(val => val.toUpperCase())
          .optional(),
       vehicleType: z.string().min(1).optional(),

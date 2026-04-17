@@ -109,37 +109,3 @@ export async function uploadDocuments(req: AuthRequest, res: Response, next: Nex
       next(error);
    }
 }
-
-export async function deactivateUser(req: AuthRequest, res: Response, next: NextFunction) {
-   try {
-      const user = await User.findByIdAndUpdate(
-         req.params.id,
-         { isActive: false },
-         { new: true },
-      ).select("-password");
-
-      if (!user) {
-         throw ApiError.notFound("Usuário não encontrado");
-      }
-      res.json({ status: "success", data: user, message: "Usuário desativado" });
-   } catch (error) {
-      next(error);
-   }
-}
-
-export async function activateUser(req: AuthRequest, res: Response, next: NextFunction) {
-   try {
-      const user = await User.findByIdAndUpdate(
-         req.params.id,
-         { isActive: true },
-         { new: true },
-      ).select("-password");
-
-      if (!user) {
-         throw ApiError.notFound("Usuário não encontrado");
-      }
-      res.json({ status: "success", data: user, message: "Usuário ativado" });
-   } catch (error) {
-      next(error);
-   }
-}

@@ -1,6 +1,6 @@
+import { BlockedDate } from "../models/BlockedDate";
 import { Scheduling } from "../models/Scheduling";
 import { TimeWindow } from "../models/TimeWindow";
-import { BlockedDate } from "../models/BlockedDate";
 import { User } from "../models/User";
 import type { SchedulingDocument } from "../types";
 import { ApiError } from "../utils/apiError";
@@ -49,16 +49,9 @@ export async function createScheduling(data: CreateSchedulingData, files?: Expre
       throw ApiError.notFound("Janela de horário não encontrada");
    }
 
-   if (timeWindow.currentCount >= timeWindow.maxVehicles) {
-      throw ApiError.badRequest("Janela de horário lotada. Escolha outro horário.");
-   }
-
-   const windowDate = new Date(timeWindow.date);
-   windowDate.setHours(0, 0, 0, 0);
-
    const blocked = await BlockedDate.findOne({
       companyId: data.companyId,
-      date: windowDate,
+      date: timeWindow.date,
    });
 
    if (blocked) {
@@ -74,17 +67,35 @@ export async function createScheduling(data: CreateSchedulingData, files?: Expre
       uploadedAt: new Date(),
    }));
 
-   const scheduling = await Scheduling.create({
-      ...data,
-      documents,
-   });
+   // Reservar vaga atomicamente — protege contra race condition
+   const windowReserved = await TimeWindow.findOneAndUpdate(
+      {
+         _id: data.timeWindowId,
+         isActive: true,
+         $expr: { $lt: ["$currentCount", "$maxVehicles"] },
+      },
+      { $inc: { currentCount: 1 } },
+   );
 
-   await TimeWindow.updateOne({ _id: data.timeWindowId }, { $inc: { currentCount: 1 } });
+   if (!windowReserved) {
+      throw ApiError.badRequest("Janela de horário lotada. Escolha outro horário.");
+   }
 
-   return scheduling.populate([
-      { path: "companyId", select: "name document" },
-      { path: "timeWindowId", select: "date startTime endTime" },
-   ]);
+   try {
+      const scheduling = await Scheduling.create({
+         ...data,
+         documents,
+      });
+
+      return scheduling.populate([
+         { path: "companyId", select: "name document" },
+         { path: "timeWindowId", select: "date startTime endTime" },
+      ]);
+   } catch (err) {
+      // Rollback do contador se a criação do agendamento falhar
+      await TimeWindow.updateOne({ _id: data.timeWindowId }, { $inc: { currentCount: -1 } });
+      throw err;
+   }
 }
 
 export async function getSchedulingsByCarrier(carrierId: string, status?: string) {
@@ -161,7 +172,10 @@ export async function cancelScheduling(id: string, carrierId: string) {
    scheduling.status = "cancelled";
    await scheduling.save();
 
-   await TimeWindow.updateOne({ _id: scheduling.timeWindowId }, { $inc: { currentCount: -1 } });
+   await TimeWindow.updateOne(
+      { _id: scheduling.timeWindowId, currentCount: { $gt: 0 } },
+      { $inc: { currentCount: -1 } },
+   );
 
    return scheduling;
 }

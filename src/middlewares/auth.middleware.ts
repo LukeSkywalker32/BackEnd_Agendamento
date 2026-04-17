@@ -8,13 +8,15 @@ export function authMiddleware(req: AuthRequest, _res: Response, next: NextFunct
    const authHeader = req.headers.authorization;
 
    if (!authHeader) {
-      throw ApiError.unauthorized("Token não fornecido");
+      next(ApiError.unauthorized("Token não fornecido"));
+      return;
    }
 
    const parts = authHeader.split(" ");
 
    if (parts.length !== 2 || parts[0] !== "Bearer") {
-      throw ApiError.unauthorized("Token mal formatado");
+      next(ApiError.unauthorized("Token mal formatado"));
+      return;
    }
 
    const token = parts[1];
@@ -24,6 +26,7 @@ export function authMiddleware(req: AuthRequest, _res: Response, next: NextFunct
       req.user = decoded;
       next();
    } catch {
-      throw ApiError.unauthorized("Token inválido ou expirado");
+      next(ApiError.unauthorized("Token inválido ou expirado"));
+      return;
    }
 }

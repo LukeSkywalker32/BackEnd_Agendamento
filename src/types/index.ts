@@ -1,7 +1,7 @@
 import type { Request } from "express";
 export type UserRole = "admin" | "company" | "carrier";
 export type SchedulingStatus = "pending" | "confirmed" | "checked_in" | "completed" | "cancelled";
-export type DocumentStatus = "pending" | "approved" | "rejected";
+export type DocumentStatus = "not_attached" | "pending" | "approved" | "rejected";
 export type CheckInStatus = "on_time" | "late" | "early";
 
 export interface JwtPayload {

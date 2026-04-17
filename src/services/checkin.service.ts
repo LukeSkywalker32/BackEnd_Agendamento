@@ -13,13 +13,18 @@ export async function getSchedulingsByCpf(cpf: string) {
    }
 
    const today = new Date();
-   today.setHours(0, 0, 0, 0);
+   today.setUTCHours(0, 0, 0, 0);
    const tomorrow = new Date(today);
    tomorrow.setDate(tomorrow.getDate() + 1);
+
+   const todayWindows = await TimeWindow.find({
+      date: { $gte: today, $lt: tomorrow },
+   }).select("_id");
 
    const schedulings = await Scheduling.find({
       driverCpf: cleanedCpf,
       status: { $in: ["pending", "confirmed"] },
+      timeWindowId: { $in: todayWindows.map(w => w._id) },
    })
       .populate("companyId", "name document")
       .populate("timeWindowId", "date startTime endTime")
@@ -36,19 +41,27 @@ export async function performCheckin(cpf: string) {
    }
 
    const today = new Date();
-   today.setHours(0, 0, 0, 0);
+   today.setUTCHours(0, 0, 0, 0);
    const tomorrow = new Date(today);
    tomorrow.setDate(tomorrow.getDate() + 1);
+
+   const todayWindows = await TimeWindow.find({
+      date: { $gte: today, $lt: tomorrow },
+   }).select("_id");
+
+   const timeWindowIds = todayWindows.map(w => w._id);
 
    const scheduling = await Scheduling.findOne({
       driverCpf: cleanedCpf,
       status: "confirmed",
+      timeWindowId: { $in: timeWindowIds },
    }).populate("timeWindowId");
 
    if (!scheduling) {
       const pending = await Scheduling.findOne({
          driverCpf: cleanedCpf,
          status: "pending",
+         timeWindowId: { $in: timeWindowIds },
       });
 
       if (pending) {

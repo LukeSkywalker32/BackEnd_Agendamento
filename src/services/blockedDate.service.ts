@@ -9,8 +9,7 @@ interface CreateBlockedDateData {
 }
 
 export async function createBlockedDate(data: CreateBlockedDateData) {
-   const blockedDate = new Date(data.date + "T00:00:00.000Z");
-   //blockedDate.setHours(0, 0, 0, 0);
+   const blockedDate = new Date(`${data.date}T00:00:00.000Z`);
 
    const existing = await BlockedDate.findOne({
       companyId: data.companyId,
@@ -47,9 +46,12 @@ export async function createBlockedDate(data: CreateBlockedDateData) {
 }
 
 export async function getBlockedDatesByCompany(companyId: string) {
+   const today = new Date();
+   today.setUTCHours(0, 0, 0, 0);
+
    return BlockedDate.find({
       companyId,
-      date: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+      date: { $gte: today },
    }).sort({ date: 1 });
 }
 
