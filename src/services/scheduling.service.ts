@@ -85,6 +85,7 @@ export async function createScheduling(data: CreateSchedulingData, files?: Expre
       const scheduling = await Scheduling.create({
          ...data,
          documents,
+         documentStatus: documents.length > 0 ? "pending" : "not_attached",
       });
 
       return scheduling.populate([
