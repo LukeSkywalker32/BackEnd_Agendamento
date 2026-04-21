@@ -84,3 +84,10 @@ export const schedulingParamsSchema = z.object({
       id: z.string().min(1, "ID é obrigatório"),
    }),
 });
+
+export const validateDocumentsSchema = z.object({
+   body: z.object({
+      status: z.enum(["approved", "rejected"]),
+      rejectionReason: z.string().optional(),
+   }),
+});
