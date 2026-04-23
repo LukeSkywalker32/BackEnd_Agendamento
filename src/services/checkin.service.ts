@@ -5,6 +5,7 @@ import type { CheckInStatus } from "../types";
 import { ApiError } from "../utils/apiError";
 import { cleanCPF, isValidCPF } from "../utils/cpf";
 
+// busca agendamentos do dia
 export async function getSchedulingsByCpf(cpf: string) {
    const cleanedCpf = cleanCPF(cpf);
 
@@ -17,6 +18,7 @@ export async function getSchedulingsByCpf(cpf: string) {
    const tomorrow = new Date(today);
    tomorrow.setDate(tomorrow.getDate() + 1);
 
+   //busca somente  agendamento do dia
    const todayWindows = await TimeWindow.find({
       date: { $gte: today, $lt: tomorrow },
    }).select("_id");
@@ -33,6 +35,7 @@ export async function getSchedulingsByCpf(cpf: string) {
    return schedulings;
 }
 
+//Realiza check-in
 export async function performCheckin(cpf: string) {
    const cleanedCpf = cleanCPF(cpf);
 
@@ -134,6 +137,7 @@ export async function performCheckin(cpf: string) {
    };
 }
 
+// busca check-ins por empresa
 export async function getCheckinsByCompany(companyId: string) {
    const schedulings = await Scheduling.find({
       companyId,
@@ -145,7 +149,7 @@ export async function getCheckinsByCompany(companyId: string) {
    return CheckIn.find({ schedulingId: { $in: schedulingIds } })
       .populate({
          path: "schedulingId",
-         select: "driverName vehiclePlate vehicleType carrierId companyId",
+         select: "driverName vehiclePlates vehicleType carrierId companyId",
          populate: [
             { path: "carrierId", select: "name" },
             { path: "companyId", select: "name" },

@@ -1,4 +1,6 @@
+import { ProductBalance } from "../models/ProductBalance";
 import { Scheduling } from "../models/Scheduling";
+import { TimeWindow } from "../models/TimeWindow";
 import { ApiError } from "../utils/apiError";
 
 interface ValidateDocumentData {
@@ -17,23 +19,40 @@ export async function validateDocument(data: ValidateDocumentData) {
    if (!scheduling) {
       throw ApiError.notFound("Agendamento não encontrado");
    }
-
-   if (scheduling.documents.length === 0) {
-      throw ApiError.badRequest("Nenhum documento enviado para validar");
+   // verificando se o documento foi aprovado antes, se nao foi nao pode aprovar
+   if (scheduling.documentStatus !== "pending") {
+      throw ApiError.badRequest("Documentos não estão pendentes de análise.");
    }
-
    if (scheduling.status === "cancelled") {
-      throw ApiError.badRequest("Agendamento cancelado");
+      throw ApiError.badRequest("Não é possível validar documentos de um agendamento cancelado");
    }
-
-   scheduling.documentStatus = data.status;
 
    if (data.status === "approved") {
+      scheduling.documentStatus = "approved";
       scheduling.status = "confirmed";
       scheduling.rejectionReason = "";
+
+      // Atualiza saldo: move de "reservado" para "utilizado"
+      const timeWindow = await TimeWindow.findById(scheduling.timeWindowId);
+      if (timeWindow) {
+         await ProductBalance.updateOne(
+            {
+               productId: scheduling.productId,
+               companyId: scheduling.companyId,
+               date: timeWindow.date,
+               reservedAmount: { $gte: scheduling.quantity },
+            },
+            {
+               $inc: {
+                  reservedAmount: -scheduling.quantity,
+                  usedAmount: scheduling.quantity,
+               },
+            },
+         );
+      }
    } else {
+      scheduling.documentStatus = "rejected";
       scheduling.rejectionReason = data.rejectionReason || "Documento rejeitado";
    }
-
    return scheduling.save();
 }

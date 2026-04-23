@@ -39,6 +39,8 @@ export const createSchedulingSchema = z.object({
       .object({
          companyId: z.string().min(1, "Empresa de insumos é obrigatória"),
          timeWindowId: z.string().min(1, "Janela de horário é obrigatória"),
+         productId: z.string().min(1, "Produto é obrigatório"),
+         quantity: z.coerce.number().min(1, "Quantidade deve ser no mínimo 1"),
          driverName: z.string().min(3, "Nome do motorista deve ter pelo menos 3 caracteres"),
          driverCpf: z.string().min(11, "CPF inválido").max(14, "CPF inválido"),
          driverPhone: z.string().optional(),

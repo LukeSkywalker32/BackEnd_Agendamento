@@ -152,27 +152,23 @@ const schedulingSchema = new Schema<IScheduling>(
    },
 );
 
-schedulingSchema.pre("validate", function (next: any) {
+schedulingSchema.pre("validate", function () {
    const { vehicleType, vehiclePlates } = this;
    if (!vehiclePlates?.tractor) {
-      return next(new Error("Placa do cavalo é obrigatória"));
+      throw new Error("Placa do cavalo é obrigatória");
    }
    if (vehicleType === "carreta" && !vehiclePlates.trailer1) {
-      return next(
-         new Error("placa do primeiro trailer é obrigatória para veículos do tipo carreta"),
-      );
+      throw new Error("placa do primeiro trailer é obrigatória para veículos do tipo carreta");
    }
    if (vehicleType === "bitrem" && (!vehiclePlates.trailer1 || !vehiclePlates.trailer2)) {
-      return next(new Error("Placas da carreta 1 e 2 são obrigatórias para 'bitrem'"));
+      throw new Error("Placas da carreta 1 e 2 são obrigatórias para 'bitrem'");
    }
    if (
       vehicleType === "rodotrem" &&
       (!vehiclePlates.trailer1 || !vehiclePlates.trailer2 || !vehiclePlates.trailer3)
    ) {
-      return next(new Error("Placas das 3 carretas são obrigatórias para 'rodotrem'"));
+      throw new Error("Placas das 3 carretas são obrigatórias para 'rodotrem'");
    }
-
-   next();
 });
 
 schedulingSchema.index({ carrierId: 1, status: 1 });

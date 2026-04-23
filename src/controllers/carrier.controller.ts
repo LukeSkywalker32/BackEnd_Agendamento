@@ -1,9 +1,12 @@
 import type { NextFunction, Response } from "express";
 import { User } from "../models/User";
+import * as productService from "../services/product.service";
 import * as schedulingService from "../services/scheduling.service";
 import * as timeWindowService from "../services/timeWindow.service";
 import type { AuthRequest } from "../types";
 import { ApiError } from "../utils/apiError";
+
+type NamedFiles = { [fieldname: string]: Express.Multer.File[] };
 
 export async function listCompanies(_req: AuthRequest, res: Response, next: NextFunction) {
    try {
@@ -29,14 +32,30 @@ export async function getCompanyTimeWindows(req: AuthRequest, res: Response, nex
    }
 }
 
+export async function listCompanyProducts(req: AuthRequest, res: Response, next: NextFunction) {
+   try {
+      const products = await productService.getProductsByCompany(req.params.id as string, true);
+      res.json({ status: "success", data: products });
+   } catch (error) {
+      next(error);
+   }
+}
+
 export async function createScheduling(req: AuthRequest, res: Response, next: NextFunction) {
    try {
+      const files = req.files as NamedFiles | undefined;
       const scheduling = await schedulingService.createScheduling(
          {
             carrierId: req.user!.userId,
             ...req.body,
          },
-         req.files as Express.Multer.File[],
+         files
+            ? {
+                 cnh: files.cnh,
+                 vehicleDoc: files.vehicleDoc,
+                 purchaseOrder: files.purchaseOrder,
+              }
+            : undefined,
       );
       res.status(201).json({ status: "success", data: scheduling });
    } catch (error) {
@@ -93,16 +112,22 @@ export async function cancelScheduling(req: AuthRequest, res: Response, next: Ne
 
 export async function uploadDocuments(req: AuthRequest, res: Response, next: NextFunction) {
    try {
-      const files = req.files as Express.Multer.File[];
-      if (!files || files.length === 0) {
+      const files = req.files as NamedFiles | undefined;
+      if (!files || Object.keys(files).length === 0) {
          res.status(400).json({ status: "error", message: "Nenhum arquivo enviado" });
          return;
       }
 
-      const scheduling = await schedulingService.uploadSchedulingDocuments(
+      const scheduling = await schedulingService.uploadDocuments(
          req.params.id as string,
          req.user!.userId,
-         files,
+         files
+            ? {
+                 cnh: files.cnh,
+                 vehicleDoc: files.vehicleDoc,
+                 purchaseOrder: files.purchaseOrder,
+              }
+            : {},
       );
       res.json({ status: "success", data: scheduling });
    } catch (error) {
