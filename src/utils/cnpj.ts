@@ -1,15 +1,15 @@
 /**
  * Remove caracteres não numéricos do CNPJ
  */
-export function cleanCnpj(cnpj: string): string {
+export function cleanCNPJ(cnpj: string): string {
    return cnpj.replace(/\D/g, "");
 }
 
 /**
  * Valida CNPJ com algoritmo oficial da Receita Federal
  */
-export function isValidCnpj(cnpj: string): boolean {
-   const cleaned = cleanCnpj(cnpj);
+export function isValidCNPJ(cnpj: string): boolean {
+   const cleaned = cleanCNPJ(cnpj);
 
    if (cleaned.length !== 14) return false;
 

@@ -1,15 +1,15 @@
 /**
  * Remove caracteres não numéricos do CPF
  */
-export function cleanCpf(cpf: string): string {
+export function cleanCPF(cpf: string): string {
    return cpf.replace(/\D/g, "");
 }
 
 /**
  * Valida CPF com algoritmo oficial da Receita Federal
  */
-export function isValidCpf(cpf: string): boolean {
-   const cleaned = cleanCpf(cpf);
+export function isValidCPF(cpf: string): boolean {
+   const cleaned = cleanCPF(cpf);
 
    if (cleaned.length !== 11) return false;
 
