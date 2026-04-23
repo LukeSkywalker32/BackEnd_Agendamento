@@ -6,6 +6,8 @@ import jwt from "jsonwebtoken";
 import { TimeWindow } from "../models/TimeWindow";
 import path from "node:path";
 import { Scheduling } from "../models/Scheduling";
+import { Product } from "../models/Product";
+import { ProductBalance } from "../models/ProductBalance";
 import fs from "node:fs";
 
 describe("Carrier & Scheduling Endpoints", () => {
@@ -13,6 +15,7 @@ describe("Carrier & Scheduling Endpoints", () => {
    let carrierId: string;
    let companyId: string;
    let timeWindowId: string;
+   let productId: string;
 
    // Criar arquivo mock para upload
    const testFilePath = path.join(__dirname, "test-file.pdf");
@@ -52,6 +55,23 @@ describe("Carrier & Scheduling Endpoints", () => {
          currentCount: 0,
       });
       timeWindowId = String(window._id);
+
+      const product = await Product.create({
+         companyId,
+         name: "Milho",
+         unit: "ton",
+         isActive: true
+      });
+      productId = String(product._id);
+
+      await ProductBalance.create({
+         productId,
+         companyId,
+         date: new Date("2027-05-15"),
+         totalAmount: 100,
+         reservedAmount: 0,
+         usedAmount: 0
+      });
    });
 
    // Limpar arquivo
@@ -65,10 +85,12 @@ describe("Carrier & Scheduling Endpoints", () => {
          .set("Authorization", `Bearer ${carrierToken}`)
          .field("companyId", companyId)
          .field("timeWindowId", timeWindowId)
+         .field("productId", productId)
+         .field("quantity", 10)
          .field("driverName", "João Silva")
          .field("driverCpf", "11122233344") // Inválido, vai falhar!
-         .field("vehiclePlate", "ABC1234")
-         .field("vehicleType", "Truck")
+         .field("vehiclePlates[tractor]", "ABC1234")
+         .field("vehicleType", "truck")
          .attach("documents", testFilePath);
 
       // O algortimo de CPF é acionado
@@ -86,14 +108,18 @@ describe("Carrier & Scheduling Endpoints", () => {
          .set("Authorization", `Bearer ${carrierToken}`)
          .field("companyId", companyId)
          .field("timeWindowId", timeWindowId)
+         .field("productId", productId)
+         .field("quantity", 10)
          .field("driverName", "João Silva")
          .field("driverCpf", "12345678909") // Válido
-         .field("vehiclePlate", "ABC1234")
-         .field("vehicleType", "Truck");
+         .field("vehiclePlates[tractor]", "ABC1234")
+         .field("vehicleType", "truck");
+
+      if (res.status === 404) console.log(res.body);
 
       expect(res.status).toBe(201);
       expect(res.body.data.status).toBe("pending");
-      expect(res.body.data.vehiclePlate).toBe("ABC1234");
+      expect(res.body.data.vehiclePlates.tractor).toBe("ABC1234");
 
       // Verificar se incrementou currentCount
       const window = await TimeWindow.findById(timeWindowId);
@@ -109,12 +135,14 @@ describe("Carrier & Scheduling Endpoints", () => {
          .set("Authorization", `Bearer ${carrierToken}`)
          .field("companyId", companyId)
          .field("timeWindowId", timeWindowId)
+         .field("productId", productId)
+         .field("quantity", 10)
          .field("driverName", "João Silva")
          .field("driverCpf", "12345678909")
-         .field("vehiclePlate", "ABC1234")
-         .field("vehicleType", "Truck");
+         .field("vehiclePlates[tractor]", "ABC1234")
+         .field("vehicleType", "truck");
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toMatch(/Janela de horário lotada/i);
+      expect(res.body.message).toMatch(/Janela de horário indisponível/i);
    });
 });

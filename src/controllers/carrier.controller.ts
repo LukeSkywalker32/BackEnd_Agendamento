@@ -36,7 +36,7 @@ export async function createScheduling(req: AuthRequest, res: Response, next: Ne
             carrierId: req.user!.userId,
             ...req.body,
          },
-         req.files as Express.Multer.File[],
+         req.files as { [fieldname: string]: Express.Multer.File[] },
       );
       res.status(201).json({ status: "success", data: scheduling });
    } catch (error) {
@@ -93,13 +93,13 @@ export async function cancelScheduling(req: AuthRequest, res: Response, next: Ne
 
 export async function uploadDocuments(req: AuthRequest, res: Response, next: NextFunction) {
    try {
-      const files = req.files as Express.Multer.File[];
-      if (!files || files.length === 0) {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      if (!files || Object.keys(files).length === 0) {
          res.status(400).json({ status: "error", message: "Nenhum arquivo enviado" });
          return;
       }
 
-      const scheduling = await schedulingService.uploadSchedulingDocuments(
+      const scheduling = await schedulingService.uploadDocuments(
          req.params.id as string,
          req.user!.userId,
          files,

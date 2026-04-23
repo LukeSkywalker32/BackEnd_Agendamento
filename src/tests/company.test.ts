@@ -63,8 +63,7 @@ describe("Company Endpoints", () => {
    describe("Blocked Dates", () => {
       it("should block a date and set existing windows to inactive", async () => {
          // Cria uma window válida
-         const targetDate = new Date("2027-12-25");
-         targetDate.setHours(0, 0, 0, 0);
+         const targetDate = new Date("2027-12-25T00:00:00.000Z");
 
          await TimeWindow.create({
             companyId,

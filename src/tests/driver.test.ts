@@ -17,25 +17,32 @@ describe("Driver Checkin Endpoints", () => {
          maxVehicles: 1,
       });
 
-      const scheduling = await Scheduling.create({
-         carrierId: new mongoose.Types.ObjectId(),
-         companyId: new mongoose.Types.ObjectId(),
-         timeWindowId: window._id,
-         driverName: "Motorista Checkin",
-         driverCpf: "12345678909", // CPF válido
-         vehiclePlate: "XXX9999",
-         vehicleType: "Carreta",
-         status: "confirmed", // O check-in só passará se for confirmed
-         documentStatus: "approved",
-      });
-      schedulingId = String(scheduling._id);
+      try {
+         const scheduling = await Scheduling.create({
+            carrierId: new mongoose.Types.ObjectId(),
+            companyId: new mongoose.Types.ObjectId(),
+            timeWindowId: window._id,
+            productId: new mongoose.Types.ObjectId(),
+            quantity: 10,
+            driverName: "Motorista Checkin",
+            driverCpf: "12345678909", // CPF válido
+            vehiclePlates: { tractor: "XXX9999" },
+            vehicleType: "toco",
+            status: "confirmed", // O check-in só passará se for confirmed
+            documentStatus: "approved",
+         });
+         schedulingId = String(scheduling._id);
+      } catch (e) {
+         console.error("SCHEDULING CREATE ERROR:", e);
+         throw e;
+      }
    });
 
    it("should find schedulings by valid CPF", async () => {
       const res = await request(app).get("/api/driver/schedulings/12345678909");
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBe(1);
-      expect(res.body.data[0].vehiclePlate).toBe("XXX9999");
+      expect(res.body.data[0].vehiclePlates.tractor).toBe("XXX9999");
    });
 
    it("should fail with invalid CPF", async () => {
