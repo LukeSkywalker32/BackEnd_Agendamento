@@ -1,35 +1,44 @@
-export function isValidCNPJ(cnpj: string): boolean {
-   const clean = cnpj.replace(/\D/g, "");
-
-   if (clean.length !== 14 || /^(\d)\1{13}$/.test(clean)) {
-      return false;
-   }
-
-   const digits = clean.split("").map(Number);
-
-   const calculateDigit = (slice: number[], weights: number[]): number => {
-      let sum = 0;
-      for (let i = 0; i < slice.length; i++) {
-         sum += slice[i] * weights[i];
-      }
-      const remainder = sum % 11;
-      return remainder < 2 ? 0 : 11 - remainder;
-   };
-
-   const firstWeights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-   const secondWeights = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-
-   const firstDigit = calculateDigit(digits.slice(0, 12), firstWeights);
-   const secondDigit = calculateDigit(digits.slice(0, 13), secondWeights);
-
-   return firstDigit === digits[12] && secondDigit === digits[13];
-}
-
-export function formatCNPJ(cnpj: string): string {
-   const clean = cnpj.replace(/\D/g, "");
-   return clean.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
-}
-
-export function cleanCNPJ(cnpj: string): string {
+/**
+ * Remove caracteres não numéricos do CNPJ
+ */
+export function cleanCnpj(cnpj: string): string {
    return cnpj.replace(/\D/g, "");
+}
+
+/**
+ * Valida CNPJ com algoritmo oficial da Receita Federal
+ */
+export function isValidCnpj(cnpj: string): boolean {
+   const cleaned = cleanCnpj(cnpj);
+
+   if (cleaned.length !== 14) return false;
+
+   // Rejeita CNPJs com todos os dígitos iguais (ex: 11.111.111/1111-11)
+   if (/^(\d)\1{13}$/.test(cleaned)) return false;
+
+   const digits = cleaned.split("").map(Number);
+
+   // Cálculo do primeiro dígito verificador
+   const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+   let sum = 0;
+   for (let i = 0; i < 12; i++) {
+      sum += digits[i] * weights1[i];
+   }
+   let remainder = sum % 11;
+   const firstDigit = remainder < 2 ? 0 : 11 - remainder;
+
+   if (digits[12] !== firstDigit) return false;
+
+   // Cálculo do segundo dígito verificador
+   const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+   sum = 0;
+   for (let i = 0; i < 13; i++) {
+      sum += digits[i] * weights2[i];
+   }
+   remainder = sum % 11;
+   const secondDigit = remainder < 2 ? 0 : 11 - remainder;
+
+   if (digits[13] !== secondDigit) return false;
+
+   return true;
 }

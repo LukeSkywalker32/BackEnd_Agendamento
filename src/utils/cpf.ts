@@ -1,32 +1,40 @@
-export function isValidCPF(cpf: string): boolean {
-   const clean = cpf.replace(/\D/g, "");
-
-   if (clean.length !== 11 || /^(\d)\1{10}$/.test(clean)) {
-      return false;
-   }
-
-   const digits = clean.split("").map(Number);
-
-   const calculateDigit = (slice: number[], factor: number): number => {
-      let sum = 0;
-      for (let i = 0; i < slice.length; i++) {
-         sum += slice[i] * (factor - i);
-      }
-      const remainder = sum % 11;
-      return remainder < 2 ? 0 : 11 - remainder;
-   };
-
-   const firstDigit = calculateDigit(digits.slice(0, 9), 10);
-   const secondDigit = calculateDigit(digits.slice(0, 10), 11);
-
-   return firstDigit === digits[9] && secondDigit === digits[10];
-}
-
-export function formatCPF(cpf: string): string {
-   const clean = cpf.replace(/\D/g, "");
-   return clean.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
-}
-
-export function cleanCPF(cpf: string): string {
+/**
+ * Remove caracteres não numéricos do CPF
+ */
+export function cleanCpf(cpf: string): string {
    return cpf.replace(/\D/g, "");
+}
+
+/**
+ * Valida CPF com algoritmo oficial da Receita Federal
+ */
+export function isValidCpf(cpf: string): boolean {
+   const cleaned = cleanCpf(cpf);
+
+   if (cleaned.length !== 11) return false;
+
+   // Rejeita CPFs com todos os dígitos iguais (ex: 111.111.111-11)
+   if (/^(\d)\1{10}$/.test(cleaned)) return false;
+
+   const digits = cleaned.split("").map(Number);
+
+   // Primeiro dígito verificador
+   let sum = 0;
+   for (let i = 0; i < 9; i++) {
+      sum += digits[i] * (10 - i);
+   }
+   let remainder = (sum * 10) % 11;
+   if (remainder === 10) remainder = 0;
+   if (digits[9] !== remainder) return false;
+
+   // Segundo dígito verificador
+   sum = 0;
+   for (let i = 0; i < 10; i++) {
+      sum += digits[i] * (11 - i);
+   }
+   remainder = (sum * 10) % 11;
+   if (remainder === 10) remainder = 0;
+   if (digits[10] !== remainder) return false;
+
+   return true;
 }
