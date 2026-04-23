@@ -14,26 +14,40 @@ router.use(authMiddleware, roleMiddleware("carrier"));
 router.get("/companies", carrierController.listCompanies);
 router.get("/companies/:id/time-windows", carrierController.getCompanyTimeWindows);
 
+router.get("/companies/:id/products", carrierController.listCompanyProducts);
+
 // Agendamentos
 router.post(
    "/schedulings",
-   uploadDocuments.array("documents", 5),
+   uploadDocuments.fields([
+      { name: "cnh", maxCount: 1 },
+      { name: "vehicleDoc", maxCount: 1 },
+      { name: "purchaseOrder", maxCount: 1 },
+   ]),
    validate(createSchedulingSchema),
    carrierController.createScheduling,
 );
+
 router.get("/schedulings", carrierController.getSchedulings);
 router.get("/schedulings/:id", carrierController.getSchedulingDetail);
+
 router.put(
    "/schedulings/:id",
    validate(updateSchedulingSchema),
    carrierController.updateScheduling,
 );
+
 router.patch("/schedulings/:id/cancel", carrierController.cancelScheduling);
 
 // Upload de documentos
 router.post(
    "/schedulings/:id/documents",
-   uploadDocuments.array("documents", 5),
+   // Mesma correção: campos nomeados por tipo de documento
+   uploadDocuments.fields([
+      { name: "cnh", maxCount: 1 },
+      { name: "vehicleDoc", maxCount: 1 },
+      { name: "purchaseOrder", maxCount: 1 },
+   ]),
    carrierController.uploadDocuments,
 );
 

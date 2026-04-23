@@ -19,15 +19,20 @@ export async function validateDocument(data: ValidateDocumentData) {
    if (!scheduling) {
       throw ApiError.notFound("Agendamento não encontrado");
    }
-
+   // verificando se o documento foi aprovado antes, se nao foi nao pode aprovar
    if (scheduling.documentStatus !== "pending") {
       throw ApiError.badRequest("Documentos não estão pendentes de análise.");
+   }
+   if (scheduling.status === "cancelled") {
+      throw ApiError.badRequest("Não é possível validar documentos de um agendamento cancelado");
    }
 
    if (data.status === "approved") {
       scheduling.documentStatus = "approved";
+      scheduling.status = "confirmed";
       scheduling.rejectionReason = "";
 
+      // Atualiza saldo: move de "reservado" para "utilizado"
       const timeWindow = await TimeWindow.findById(scheduling.timeWindowId);
       if (timeWindow) {
          await ProductBalance.updateOne(
